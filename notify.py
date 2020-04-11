@@ -1,6 +1,7 @@
 import requests
 import csv
 import pyttsx3
+import time
 from bs4 import BeautifulSoup
 
 engine = pyttsx3.init()
@@ -50,6 +51,7 @@ class Checker:
             title = category.find('h1').text.strip()[:-1]
             self.stats[title] = int(number.text.strip().replace(',', ''))
 
+checker = Checker()
 
 def speecher(value, name_stat):
     if name_stat == 'Coronavirus Cases':
@@ -64,21 +66,25 @@ def speecher(value, name_stat):
     engine.stop()
 
 def detector():
-    with open(FILENAME, mode='r') as file:
-        prev_stats = csv.DictReader(file)[-1]
-        current_stats = checker.export()
+    while True:
+        with open(FILENAME, mode='r') as file:
+            prev_stats = [row for row in csv.DictReader(file)][-1]
+            current_stats = checker.export()
 
-        name_stat = str()
-        for prev_stat in prev_stats:
-            if current_stats[prev_stat[0]] != prev_stat[1]:
-                name_stat = prev_stat[0]
-                difference = current_stats[prev_stat[0]] - prev_stat[1] 
-                speecher(difference, name_stat)
-        checker.export(type=1)
-
-
+            name_stat = str()
+            for prev_stat in prev_stats.items():
+                if current_stats[prev_stat[0]] != prev_stat[1]:
+                    name_stat = prev_stat[0]
+                    difference = current_stats[prev_stat[0]] - int(prev_stat[1])
+                    if difference > 0:
+                        speecher(difference, name_stat)
+            checker.export(type=1)
+        time.sleep(60)
 
 if __name__ == "__main__":
-    checker = Checker()
+    detector()
+
+
+    
 
 
