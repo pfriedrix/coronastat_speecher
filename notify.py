@@ -14,9 +14,9 @@ class Checker:
     def __init__(self):
         self.url_stats = 'https://www.worldometers.info/coronavirus/'
         self.stats = dict()
-        self.__manager()
+        self.manager()
 
-    def __manager(self):
+    def manager(self):
         '''Checker Manager'''
         page = self.get_page()
         self.get_stats_main(page)
@@ -54,12 +54,6 @@ class Checker:
             self.stats[title] = int(number.text.strip().replace(',', ''))
 
 checker = Checker()
-fields = [field for field in checker.stats.keys()]
-with open(FILENAME, mode='w') as file:
-    writer = csv.DictWriter(file, fieldnames=fields)
-    writer.writeheader()
-
-checker.export(type=1)
 
 def speecher(value, name_stat, overall_num):
     if name_stat == 'Coronavirus Cases':
@@ -72,7 +66,7 @@ def speecher(value, name_stat, overall_num):
         engine.runAndWait()
     elif name_stat == 'Recovered':
         engine.say('К числу излечившихся от коронавируса добавилось {} людей'.format(int(value)))
-        engine.say('Общий результат излечившихся от короновира {} людей'.format(overall_num))
+        engine.say('Общий результат излечившихся от короновируса {} людей'.format(overall_num))
         engine.runAndWait()
     engine.stop()
 
@@ -80,6 +74,7 @@ def detector():
     while True:
         with open(FILENAME, mode='r') as file:
             prev_stats = [row for row in csv.DictReader(file)][-1]
+            checker.manager()
             current_stats = checker.export()
 
             name_stat = str()
@@ -87,10 +82,10 @@ def detector():
                 if current_stats[prev_stat[0]] != prev_stat[1]:
                     name_stat = prev_stat[0]
                     difference = current_stats[prev_stat[0]] - int(prev_stat[1])
-                    if difference > 10:
+                    if difference > 100:
                         speecher(difference, name_stat, current_stats[prev_stat[0]])
                         checker.export(type=1)
-        time.sleep(60)
+        time.sleep(20)
 
 if __name__ == "__main__":
     detector()
