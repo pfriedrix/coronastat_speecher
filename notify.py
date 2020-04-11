@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import requests
 import csv
 import pyttsx3
@@ -29,9 +32,8 @@ class Checker:
         fields = [field for field in self.stats.keys()]
         filename = FILENAME
 
-        with open(filename, mode='w') as file:
+        with open(filename, mode='a') as file:
             writer = csv.DictWriter(file, fieldnames=fields)
-            writer.writeheader()
             writer.writerow(self.stats)
 
     def get_page(self):
@@ -52,16 +54,25 @@ class Checker:
             self.stats[title] = int(number.text.strip().replace(',', ''))
 
 checker = Checker()
+fields = [field for field in checker.stats.keys()]
+with open(FILENAME, mode='w') as file:
+    writer = csv.DictWriter(file, fieldnames=fields)
+    writer.writeheader()
 
-def speecher(value, name_stat):
+checker.export(type=1)
+
+def speecher(value, name_stat, overall_num):
     if name_stat == 'Coronavirus Cases':
         engine.say('К числу заболевших коронавирусом добавилось {} людей'.format(int(value)))
+        engine.say('Общий результат заболевших короновирусом {} людей'.format(overall_num))
         engine.runAndWait()
     elif name_stat == 'Deaths':
         engine.say('К числу умерших от коронавируса добавилось {} людей'.format(int(value)))
+        engine.say('Общий результат умерших от короновируса {} людей'.format(overall_num))
         engine.runAndWait()
     elif name_stat == 'Recovered':
         engine.say('К числу излечившихся от коронавируса добавилось {} людей'.format(int(value)))
+        engine.say('Общий результат излечившихся от короновира {} людей'.format(overall_num))
         engine.runAndWait()
     engine.stop()
 
@@ -76,9 +87,9 @@ def detector():
                 if current_stats[prev_stat[0]] != prev_stat[1]:
                     name_stat = prev_stat[0]
                     difference = current_stats[prev_stat[0]] - int(prev_stat[1])
-                    if difference > 0:
-                        speecher(difference, name_stat)
-            checker.export(type=1)
+                    if difference > 10:
+                        speecher(difference, name_stat, current_stats[prev_stat[0]])
+                        checker.export(type=1)
         time.sleep(60)
 
 if __name__ == "__main__":
