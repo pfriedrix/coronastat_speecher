@@ -10,4 +10,4 @@ pyttsx3==2.87
 query-string==2019.4.13
 requests==2.23.0
 soupsieve==2.0
-urllib3==1.25.8
+urllib3==1.26.5
